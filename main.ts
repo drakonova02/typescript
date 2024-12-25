@@ -188,11 +188,11 @@ class Teacher extends Person {
       this.specializations = specializations;
     }
   
-    assignCourse(course): void {
+    assignCourse(course: Course): void {
       this.courses.push(course);
     }
   
-    removeCourse(courseName): void {
+    removeCourse(courseName: string): void {
       this.courses = this.courses.filter((course) => course.name !== courseName);
     }
   
@@ -229,7 +229,7 @@ class Student extends Person {
       return this.academicPerformance.gpa;
     }
   
-    updateAcademicStatus(newStatus): void {
+    updateAcademicStatus(newStatus: AcademicStatus): void {
       this.status = newStatus;
     }
   
