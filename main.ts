@@ -1,18 +1,14 @@
-// Roles: student, teacher
-// Disciplines: Computer Science, Mathematics, Physics, Biology, Chemistry
-// Academic status: active, academic leave, graduated, expelledç
-
 enum Role {
     student = "student",
     teacher = "teacher"
-}
+};
 
 enum AcademicStatus {
     active = "active",
     academicLeave = "academic leave",
     graduated = "graduated",
     expelled = "expelled"
-}
+};
   
 enum Discipline {
     computerScience = "Computer Science",
@@ -20,11 +16,31 @@ enum Discipline {
     physics = "Physics",
     biology = "Biology",
     chemistry = "Chemistry"
-}
+};
+
+type ContactInfo = { email: string } & { phone: string };
+
+type PersonInfo = {
+    firstName: string;
+    lastName: string;
+    birthDay: Date;
+    gender: 'male' | 'female' | 'other';
+    email: string;
+    phone: string;
+};
 
 type AcademicPerformance = {
     totalCredits: number;
     gpa: number;
+};
+
+type People = Person[];
+
+type CourseCollection = Course[];
+
+const defaultContact: ContactInfo = {
+    email: "info@university.com",
+    phone: "+380955555555",
 };
 
 class UniversityError extends Error {
@@ -36,9 +52,9 @@ class UniversityError extends Error {
   
 class University {
     name: string;
-    courses: Course[] = [];
+    courses: CourseCollection = [];
     groups: Group[] = [];
-    people: Person[] = [];
+    people: People = [];
 
     constructor(name: string) {
         this.name = name;
@@ -60,18 +76,18 @@ class University {
         return this.groups.find((group) => group.course === course);
     }
 
-    getAllPeopleByRole(role: string): Person[] {
+    getAllPeopleByRole(role: Role.student | Role.teacher): People {
         switch (role) {
         case Role.student:
-            return this.people.filter((person) => person.role === "student");
+            return this.people.filter((person) => person.role === Role.student);
         case Role.teacher:
-            return this.people.filter((person) => person.role === "teacher");
+            return this.people.filter((person) => person.role === Role.teacher);
         default:
             return this.assertNeverRole(role);
         }
     }
 
-    assertNeverRole(role: string): never {
+    assertNeverRole(role: Role.student | Role.teacher): never {
         throw new Error(`Unhandled role: ${role}`);
     }
 };
@@ -109,13 +125,7 @@ class Group {
     }
   
     removeStudentById(id: number): void {
-      const index = this.students.findIndex((student) => student.id === id);
-  
-      if (!~index) {
-        throw new UniversityError("Student not found in group");
-      }
-  
-      this.students.splice(index, 1);
+      this.students.splice(this.getStudentIdByGroup(id), 1);
     }
   
     getAverageGroupScore(): number {
@@ -134,6 +144,20 @@ class Group {
     getStudents(): Student[] {
       return [...this.students];
     }
+
+    getStudentIdByGroup(id: number): number {
+        const index = this.students.findIndex((student) => student.id === id);
+
+        if (!~index) {
+            throw new UniversityError("Student not found in group");
+        }
+
+        return index;
+    }
+
+    getStudentById(id: number) : Student {
+        return this.students[this.getStudentIdByGroup(id)];
+    }
 };
   
 class Person {
@@ -144,10 +168,10 @@ class Person {
     birthDay: Date;
     id: number;
     gender: string;
-    contactInfo: { email: string, phone: string };
-    role: string;
+    contactInfo: ContactInfo;
+    role: Role.student | Role.teacher;
   
-    constructor(info: { firstName: string; lastName: string; birthDay: Date; gender: string; email: string; phone: string }, role: string) {
+    constructor(info: PersonInfo, role: Role.student | Role.teacher) {
       const { firstName, lastName, birthDay, gender, email, phone } = info;
   
       this.firstName = firstName;
@@ -181,22 +205,22 @@ class Person {
   
 class Teacher extends Person {
     specializations: string[] = [];
-    courses: Course[] = [];
+    courses: CourseCollection = [];
   
-    constructor(info: { firstName: string; lastName: string; birthDay: Date; gender: string; email: string; phone: string }, specializations: string[] = []) {
+    constructor(info: PersonInfo, specializations: string[] = []) {
       super(info, Role.teacher);
       this.specializations = specializations;
     }
   
-    assignCourse(course): void {
+    assignCourse(course: Course): void {
       this.courses.push(course);
     }
   
-    removeCourse(courseName): void {
+    removeCourse(courseName: typeof Course.name): void {
       this.courses = this.courses.filter((course) => course.name !== courseName);
     }
   
-    getCourses(): Course[] {
+    getCourses(): CourseCollection {
       return [...this.courses];
     }
 };
@@ -206,10 +230,10 @@ class Student extends Person {
         totalCredits: 0,
         gpa: 0,
     };
-    enrolledCourses: Course[] = [];
+    enrolledCourses: CourseCollection = [];
     status: string;
   
-    constructor(info: { firstName: string; lastName: string; birthDay: Date; gender: string; email: string; phone: string }) {
+    constructor(info: PersonInfo) {
       super(info, Role.student);
       this.status = AcademicStatus.active;
     }
@@ -228,12 +252,14 @@ class Student extends Person {
     getAverageScore(): number {
       return this.academicPerformance.gpa;
     }
+
+    getTotalCredits: typeof this.getAverageScore = () => this.academicPerformance.totalCredits;
   
-    updateAcademicStatus(newStatus): void {
+    updateAcademicStatus(newStatus: AcademicStatus): void {
       this.status = newStatus;
     }
   
-    getEnrolledCourses(): Course[] {
+    getEnrolledCourses(): CourseCollection {
       return [...this.enrolledCourses];
     }
 }
