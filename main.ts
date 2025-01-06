@@ -1,240 +1,91 @@
-// Roles: student, teacher
-// Disciplines: Computer Science, Mathematics, Physics, Biology, Chemistry
-// Academic status: active, academic leave, graduated, expelledç
+type Operator = "+" | "-" | "*" | "/" | "%";
 
-enum Role {
-    student = "student",
-    teacher = "teacher"
+interface ICalculate {
+    chooseOperation(operator: Operator): number | string;
+    add() : number;
+    subtract() : number;
+    multiply() : number;
+    divide() : number;
+    percent() : string;
 }
 
-enum AcademicStatus {
-    active = "active",
-    academicLeave = "academic leave",
-    graduated = "graduated",
-    expelled = "expelled"
-}
-  
-enum Discipline {
-    computerScience = "Computer Science",
-    mathematics = "Mathematics",
-    physics = "Physics",
-    biology = "Biology",
-    chemistry = "Chemistry"
-}
-
-type AcademicPerformance = {
-    totalCredits: number;
-    gpa: number;
-};
-
-class UniversityError extends Error {
-    constructor(message: string) {
-      super(message);
-      this.name = "UniversityError";
-    }
-};
-  
-class University {
-    name: string;
-    courses: Course[] = [];
-    groups: Group[] = [];
-    people: Person[] = [];
-
-    constructor(name: string) {
-        this.name = name;
+class Calculate implements ICalculate {
+    private _firstNumber: number;
+    private _secondNumber: number;
+    
+    constructor(firstNumber: number, secondNumber: number) {
+        this._firstNumber = firstNumber;
+        this._secondNumber = secondNumber;
     }
 
-    addCourse(course: Course): void {
-        this.courses.push(course);
+    set firstNumber(value: number) {
+        if (Number.isNaN(value)) {
+            throw new Error("First number must be a valid number.");
+          }
+          this._firstNumber = value;
     }
 
-    addGroup(group: Group): void {
-        this.groups.push(group);
+    set secondNumber(value: number) {
+        if (Number.isNaN(value)) {
+            throw new Error("Second number must be a valid number.");
+          }
+          this._secondNumber = value;
     }
 
-    addPerson(person: Person): void {
-        this.people.push(person);
+    get firstNumber(): number {
+        return this._firstNumber;
     }
 
-    findGroupByCourse(course: Course): Group | undefined {
-        return this.groups.find((group) => group.course === course);
+    get secondNumber(): number {
+        return this._secondNumber;
     }
 
-    getAllPeopleByRole(role: string): Person[] {
-        switch (role) {
-        case Role.student:
-            return this.people.filter((person) => person.role === "student");
-        case Role.teacher:
-            return this.people.filter((person) => person.role === "teacher");
-        default:
-            return this.assertNeverRole(role);
+    chooseOperation(operator: Operator): number | string {
+        switch (operator) {
+            case "+":
+              return this.add();
+            case "-":
+              return this.subtract();
+            case "*":
+              return this.multiply();
+            case "/":
+              return this.divide();
+            case "%":
+              return this.percent();
+            default:
+              throw new Error(`Unknown operator: ${operator}`);
         }
     }
 
-    assertNeverRole(role: string): never {
-        throw new Error(`Unhandled role: ${role}`);
+    add() : number {
+        return this.firstNumber + this.secondNumber;
     }
-};
-  
-class Course {
-    name: string;
-    credits: number;
-    discipline: string;
-  
-    constructor(name: string, discipline: string, credits: number) {
-      this.name = name;
-      this.credits = credits;
-      this.discipline = discipline;
+
+    subtract() : number {
+        return this.firstNumber - this.secondNumber;
     }
-};
-  
-class Group {
-    name: string;
-    course: Course;
-    teacher: Teacher;
-    students: Student[] = [];
-  
-    constructor(name: string, course: Course, teacher: Teacher) {
-      this.name = name;
-      this.course = course;
-      this.teacher = teacher;
+
+    multiply() : number{
+        return this.firstNumber * this.secondNumber;
     }
-  
-    addStudent(student: Student): void {
-      if (this.students.includes(student)) {
-        throw new UniversityError("Student is already in the group");
-      }
-  
-      this.students.push(student);
+
+    divide() : number {
+        if (this.secondNumber === 0) {
+            throw new Error(`Division by zero is not allowed`);
+          }
+        return this.firstNumber / this.secondNumber;
     }
-  
-    removeStudentById(id: number): void {
-      const index = this.students.findIndex((student) => student.id === id);
-  
-      if (!~index) {
-        throw new UniversityError("Student not found in group");
-      }
-  
-      this.students.splice(index, 1);
-    }
-  
-    getAverageGroupScore(): number {
-      if (this.students.length) {
-        return 0;
-      }
-  
-      const totalScore = this.students.reduce(
-        (sum, student) => sum + student.getAverageScore(),
-        0
-      );
-  
-      return totalScore / this.students.length;
-    }
-  
-    getStudents(): Student[] {
-      return [...this.students];
-    }
-};
-  
-class Person {
-    static nextId = 1;
-  
-    firstName: string;
-    lastName: string;
-    birthDay: Date;
-    id: number;
-    gender: string;
-    contactInfo: { email: string, phone: string };
-    role: string;
-  
-    constructor(info: { firstName: string; lastName: string; birthDay: Date; gender: string; email: string; phone: string }, role: string) {
-      const { firstName, lastName, birthDay, gender, email, phone } = info;
-  
-      this.firstName = firstName;
-      this.lastName = lastName;
-      this.birthDay = birthDay;
-      this.id = Person.nextId++;
-      this.gender = gender;
-      this.contactInfo = { email, phone };
-      this.role = role;
-    }
-  
-    get fullName(): string {
-      return `${this.lastName} ${this.firstName}`;
-    }
-  
-    get age(): number {
-      const today = new Date();
-      let age = today.getFullYear() - this.birthDay.getFullYear();
-      const monthDiff = today.getMonth() - this.birthDay.getMonth();
-  
-      if (
-        monthDiff < 0 ||
-        (monthDiff === 0 && today.getDate() < this.birthDay.getDate())
-      ) {
-        age--;
-      }
-  
-      return age;
-    }
-};
-  
-class Teacher extends Person {
-    specializations: string[] = [];
-    courses: Course[] = [];
-  
-    constructor(info: { firstName: string; lastName: string; birthDay: Date; gender: string; email: string; phone: string }, specializations: string[] = []) {
-      super(info, Role.teacher);
-      this.specializations = specializations;
-    }
-  
-    assignCourse(course: Course): void {
-      this.courses.push(course);
-    }
-  
-    removeCourse(courseName: string): void {
-      this.courses = this.courses.filter((course) => course.name !== courseName);
-    }
-  
-    getCourses(): Course[] {
-      return [...this.courses];
-    }
-};
-  
-class Student extends Person {
-    academicPerformance: AcademicPerformance = {
-        totalCredits: 0,
-        gpa: 0,
-    };
-    enrolledCourses: Course[] = [];
-    status: string;
-  
-    constructor(info: { firstName: string; lastName: string; birthDay: Date; gender: string; email: string; phone: string }) {
-      super(info, Role.student);
-      this.status = AcademicStatus.active;
-    }
-  
-    enrollCourse(course: Course): void {
-      if (this.status !== AcademicStatus.active) {
-        throw new UniversityError(
-          "Cannot enroll: Student is not in active status"
-        );
-      }
-  
-      this.enrolledCourses.push(course);
-      this.academicPerformance.totalCredits += course.credits;
-    }
-  
-    getAverageScore(): number {
-      return this.academicPerformance.gpa;
-    }
-  
-    updateAcademicStatus(newStatus: AcademicStatus): void {
-      this.status = newStatus;
-    }
-  
-    getEnrolledCourses(): Course[] {
-      return [...this.enrolledCourses];
+
+    percent() : string {
+        return this.firstNumber * this.secondNumber / 100 + '%';
     }
 }
-  
+
+const calc = new Calculate(10, 2);
+
+console.log("Add:", calc.chooseOperation("+"));
+console.log("Subtract:", calc.chooseOperation("-"));
+console.log("Multiply:", calc.chooseOperation("*"));
+console.log("Divide:", calc.chooseOperation("/"));
+console.log("Percent:", calc.chooseOperation("%"));
+console.log("Division by zero:", new Calculate(10, 0).chooseOperation("/"));
