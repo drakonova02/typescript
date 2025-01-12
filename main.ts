@@ -1,91 +1,63 @@
 type Operator = "+" | "-" | "*" | "/" | "%";
 
 interface ICalculate {
-    chooseOperation(operator: Operator): number | string;
-    add() : number;
-    subtract() : number;
-    multiply() : number;
-    divide() : number;
-    percent() : string;
+    calc(operator: Operator, firstNumber: number, secondNumber: number): number | string;
+    add(firstNumber: number, secondNumber: number) : number;
+    subtract(firstNumber: number, secondNumber: number) : number;
+    multiply(firstNumber: number, secondNumber: number) : number;
+    divide(firstNumber: number, secondNumber: number) : number;
+    percent(firstNumber: number, secondNumber: number) : string;
 }
 
 class Calculate implements ICalculate {
-    private _firstNumber: number;
-    private _secondNumber: number;
-    
-    constructor(firstNumber: number, secondNumber: number) {
-        this._firstNumber = firstNumber;
-        this._secondNumber = secondNumber;
-    }
+    constructor() {}
 
-    set firstNumber(value: number) {
-        if (Number.isNaN(value)) {
-            throw new Error("First number must be a valid number.");
-          }
-          this._firstNumber = value;
-    }
-
-    set secondNumber(value: number) {
-        if (Number.isNaN(value)) {
-            throw new Error("Second number must be a valid number.");
-          }
-          this._secondNumber = value;
-    }
-
-    get firstNumber(): number {
-        return this._firstNumber;
-    }
-
-    get secondNumber(): number {
-        return this._secondNumber;
-    }
-
-    chooseOperation(operator: Operator): number | string {
+    calc(operator: Operator, firstNumber: number, secondNumber: number): number | string {
         switch (operator) {
             case "+":
-              return this.add();
+              return this.add(firstNumber, secondNumber);
             case "-":
-              return this.subtract();
+              return this.subtract(firstNumber, secondNumber);
             case "*":
-              return this.multiply();
+              return this.multiply(firstNumber, secondNumber);
             case "/":
-              return this.divide();
+              return this.divide(firstNumber, secondNumber);
             case "%":
-              return this.percent();
+              return this.percent(firstNumber, secondNumber);
             default:
               throw new Error(`Unknown operator: ${operator}`);
         }
     }
 
-    add() : number {
-        return this.firstNumber + this.secondNumber;
+    add(firstNumber: number, secondNumber: number) : number {
+        return firstNumber + secondNumber;
     }
 
-    subtract() : number {
-        return this.firstNumber - this.secondNumber;
+    subtract(firstNumber: number, secondNumber: number) : number {
+        return firstNumber - secondNumber;
     }
 
-    multiply() : number{
-        return this.firstNumber * this.secondNumber;
+    multiply(firstNumber: number, secondNumber: number) : number{
+        return firstNumber * secondNumber;
     }
 
-    divide() : number {
-        if (this.secondNumber === 0) {
+    divide(firstNumber: number, secondNumber: number) : number {
+        if (secondNumber === 0) {
             throw new Error(`Division by zero is not allowed`);
           }
-        return this.firstNumber / this.secondNumber;
+        return firstNumber / secondNumber;
     }
 
-    percent() : string {
-        return this.firstNumber * this.secondNumber / 100 + '%';
+    percent(firstNumber: number, secondNumber: number) : string {
+        let result : number = firstNumber * secondNumber / 100;
+        return Math.abs(result) + '%';
     }
 }
 
-const calc = new Calculate(10, 2);
+const calc = new Calculate();
 
-console.log("Add:", calc.chooseOperation("+"));
-console.log("Subtract:", calc.chooseOperation("-"));
-console.log("Multiply:", calc.chooseOperation("*"));
-console.log("Divide:", calc.chooseOperation("/"));
-console.log("Percent:", calc.chooseOperation("%"));
-console.log("Division by zero:", new Calculate(10, 0).chooseOperation("/"));
+console.log("Add:", calc.calc("+", 10, -5));
+console.log("Subtract:", calc.calc("-", 10, -5));
+console.log("Multiply:", calc.calc("*", 10, -5));
+console.log("Divide:", calc.calc("/", 10, -5));
+console.log("Percent:", calc.calc("%", 10, -5));
