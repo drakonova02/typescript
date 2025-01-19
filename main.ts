@@ -1,240 +1,205 @@
-// Roles: student, teacher
-// Disciplines: Computer Science, Mathematics, Physics, Biology, Chemistry
-// Academic status: active, academic leave, graduated, expelledç
-
-enum Role {
-    student = "student",
-    teacher = "teacher"
+interface IFigure {
+  readonly name: string;
+  readonly color: string;
+  calculateArea(): number;
+  calculatePerimeter(): number;
+  printInfo(): void;
 }
 
-enum AcademicStatus {
-    active = "active",
-    academicLeave = "academic leave",
-    graduated = "graduated",
-    expelled = "expelled"
+abstract class Figure implements IFigure {
+  readonly name: string;
+  readonly color: string;
+
+  constructor(name: string, color: string) {
+    this.name = name;
+    this.color = color;
+  }
+
+  abstract calculateArea(): number;
+  abstract calculatePerimeter(): number;
+
+  printInfo(): void {
+    console.log(`Figure: ${this.name}, Color: ${this.color}`);
+    console.log(`Area: ${this.calculateArea()}, Perimeter: ${this.calculatePerimeter()}`);
+  }
 }
-  
-enum Discipline {
-    computerScience = "Computer Science",
-    mathematics = "Mathematics",
-    physics = "Physics",
-    biology = "Biology",
-    chemistry = "Chemistry"
+
+abstract class CirculeFigure extends Figure {
+  printDiameter(radius: number | Array<number>): void {
+    if (Array.isArray(radius)) {
+      radius.forEach((value) => {
+        console.log(`Figure radius: ${value}`);
+      });
+    } else {
+      console.log(`Figure radius: ${radius}`);
+    }
+  }
 }
 
-type AcademicPerformance = {
-    totalCredits: number;
-    gpa: number;
-};
+class Circle extends CirculeFigure {
+  constructor(
+    public readonly name: string,
+    public readonly color: string,
+    public readonly radius: number
+  ) {
+    super(name, color);
+  }
 
-class UniversityError extends Error {
-    constructor(message: string) {
-      super(message);
-      this.name = "UniversityError";
-    }
-};
-  
-class University {
-    name: string;
-    courses: Course[] = [];
-    groups: Group[] = [];
-    people: Person[] = [];
+  calculateArea(): number {
+    return Math.PI * Math.pow(this.radius, 2);
+  }
 
-    constructor(name: string) {
-        this.name = name;
-    }
-
-    addCourse(course: Course): void {
-        this.courses.push(course);
-    }
-
-    addGroup(group: Group): void {
-        this.groups.push(group);
-    }
-
-    addPerson(person: Person): void {
-        this.people.push(person);
-    }
-
-    findGroupByCourse(course: Course): Group | undefined {
-        return this.groups.find((group) => group.course === course);
-    }
-
-    getAllPeopleByRole(role: string): Person[] {
-        switch (role) {
-        case Role.student:
-            return this.people.filter((person) => person.role === "student");
-        case Role.teacher:
-            return this.people.filter((person) => person.role === "teacher");
-        default:
-            return this.assertNeverRole(role);
-        }
-    }
-
-    assertNeverRole(role: string): never {
-        throw new Error(`Unhandled role: ${role}`);
-    }
-};
-  
-class Course {
-    name: string;
-    credits: number;
-    discipline: string;
-  
-    constructor(name: string, discipline: string, credits: number) {
-      this.name = name;
-      this.credits = credits;
-      this.discipline = discipline;
-    }
-};
-  
-class Group {
-    name: string;
-    course: Course;
-    teacher: Teacher;
-    students: Student[] = [];
-  
-    constructor(name: string, course: Course, teacher: Teacher) {
-      this.name = name;
-      this.course = course;
-      this.teacher = teacher;
-    }
-  
-    addStudent(student: Student): void {
-      if (this.students.includes(student)) {
-        throw new UniversityError("Student is already in the group");
-      }
-  
-      this.students.push(student);
-    }
-  
-    removeStudentById(id: number): void {
-      const index = this.students.findIndex((student) => student.id === id);
-  
-      if (!~index) {
-        throw new UniversityError("Student not found in group");
-      }
-  
-      this.students.splice(index, 1);
-    }
-  
-    getAverageGroupScore(): number {
-      if (this.students.length) {
-        return 0;
-      }
-  
-      const totalScore = this.students.reduce(
-        (sum, student) => sum + student.getAverageScore(),
-        0
-      );
-  
-      return totalScore / this.students.length;
-    }
-  
-    getStudents(): Student[] {
-      return [...this.students];
-    }
-};
-  
-class Person {
-    static nextId = 1;
-  
-    firstName: string;
-    lastName: string;
-    birthDay: Date;
-    id: number;
-    gender: string;
-    contactInfo: { email: string, phone: string };
-    role: string;
-  
-    constructor(info: { firstName: string; lastName: string; birthDay: Date; gender: string; email: string; phone: string }, role: string) {
-      const { firstName, lastName, birthDay, gender, email, phone } = info;
-  
-      this.firstName = firstName;
-      this.lastName = lastName;
-      this.birthDay = birthDay;
-      this.id = Person.nextId++;
-      this.gender = gender;
-      this.contactInfo = { email, phone };
-      this.role = role;
-    }
-  
-    get fullName(): string {
-      return `${this.lastName} ${this.firstName}`;
-    }
-  
-    get age(): number {
-      const today = new Date();
-      let age = today.getFullYear() - this.birthDay.getFullYear();
-      const monthDiff = today.getMonth() - this.birthDay.getMonth();
-  
-      if (
-        monthDiff < 0 ||
-        (monthDiff === 0 && today.getDate() < this.birthDay.getDate())
-      ) {
-        age--;
-      }
-  
-      return age;
-    }
-};
-  
-class Teacher extends Person {
-    specializations: string[] = [];
-    courses: Course[] = [];
-  
-    constructor(info: { firstName: string; lastName: string; birthDay: Date; gender: string; email: string; phone: string }, specializations: string[] = []) {
-      super(info, Role.teacher);
-      this.specializations = specializations;
-    }
-  
-    assignCourse(course: Course): void {
-      this.courses.push(course);
-    }
-  
-    removeCourse(courseName: string): void {
-      this.courses = this.courses.filter((course) => course.name !== courseName);
-    }
-  
-    getCourses(): Course[] {
-      return [...this.courses];
-    }
-};
-  
-class Student extends Person {
-    academicPerformance: AcademicPerformance = {
-        totalCredits: 0,
-        gpa: 0,
-    };
-    enrolledCourses: Course[] = [];
-    status: string;
-  
-    constructor(info: { firstName: string; lastName: string; birthDay: Date; gender: string; email: string; phone: string }) {
-      super(info, Role.student);
-      this.status = AcademicStatus.active;
-    }
-  
-    enrollCourse(course: Course): void {
-      if (this.status !== AcademicStatus.active) {
-        throw new UniversityError(
-          "Cannot enroll: Student is not in active status"
-        );
-      }
-  
-      this.enrolledCourses.push(course);
-      this.academicPerformance.totalCredits += course.credits;
-    }
-  
-    getAverageScore(): number {
-      return this.academicPerformance.gpa;
-    }
-  
-    updateAcademicStatus(newStatus: AcademicStatus): void {
-      this.status = newStatus;
-    }
-  
-    getEnrolledCourses(): Course[] {
-      return [...this.enrolledCourses];
-    }
+  calculatePerimeter(): number {
+    return 2 * Math.PI * this.radius;
+  }
 }
-  
+
+class Ellipse extends CirculeFigure {
+  constructor(
+    public readonly name: string,
+    public readonly color: string,
+    public readonly radius: Array<number>
+  ) {
+    super(name, color);
+    if (radius.length !== 2) {
+      throw new Error("Ellipse must have exactly two radii.");
+    }
+  }
+
+  calculateArea(): number {
+    return Math.PI * this.radius[0] * this.radius[1];
+  }
+
+  calculatePerimeter(): number {
+    const [a, b] = this.radius;
+    return Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
+  }
+}
+
+abstract class PolygonFigure extends Figure {
+  constructor(
+    public readonly name: string,
+    public readonly color: string,
+    public readonly sides: Array<number>
+  ) {
+    super(name, color);
+  }
+
+  getNumberOfSides(): number {
+    return this.sides.length;
+  }
+
+  abstract calculateArea(): number;
+
+  calculatePerimeter(): number {
+    return this.sides.reduce((sum, side) => sum + side, 0);
+  }
+
+  abstract printAreaFormula(): void;
+}
+
+class Rectangle extends PolygonFigure {
+  constructor(name: string, color: string, sides: Array<number>) {
+    super(name, color, sides);
+    if (sides.length !== 2) {
+      throw new Error("Rectangle must have exactly two sides.");
+    }
+  }
+
+  calculateArea(): number {
+    return this.sides[0] * this.sides[1];
+  }
+
+  printAreaFormula(): void {
+    console.log(`${this.sides[0]} * ${this.sides[1]} = ${this.calculateArea()}`);
+  }
+}
+
+class Square extends PolygonFigure {
+  constructor(name: string, color: string, sides: Array<number>) {
+    super(name, color, sides);
+    if (sides.length !== 1) {
+      throw new Error("Square must have exactly one unique side length.");
+    }
+  }
+
+  calculateArea(): number {
+    return Math.pow(this.sides[0], 2);
+  }
+
+  printAreaFormula(): void {
+    console.log(`${this.sides[0]} ^ 2 = ${this.calculateArea()}`);
+  }
+}
+
+class Triangle extends PolygonFigure {
+  constructor(name: string, color: string, sides: Array<number>) {
+    super(name, color, sides);
+
+    if (sides.length !== 3) {
+      throw new Error("Triangle must have exactly three sides.");
+    }
+
+    const [a, b, c] = sides;
+    if (a + b <= c || a + c <= b || b + c <= a) {
+      throw new Error("The sides do not satisfy the triangle inequality.");
+    }
+  }
+
+  calculateArea(): number {
+    const p: number = (this.sides[0] + this.sides[1] + this.sides[2]) / 2;
+    return Math.sqrt(p * (p - this.sides[0]) * (p - this.sides[1]) * (p - this.sides[2]));
+  }
+
+  printAreaFormula(): void {
+    const p: number = (this.sides[0] + this.sides[1] + this.sides[2]) / 2;
+    console.log(`p = (${this.sides[0]} + ${this.sides[1]} + ${this.sides[2]}) / 2 = ${p}`);
+    console.log(
+      `√(p * (p - ${this.sides[0]}) * (p - ${this.sides[1]}) * (p - ${this.sides[2]})) = ${this.calculateArea()}`
+    );
+  }
+
+  printTriangleType(): void {
+    const [a, b, c] = this.sides;
+
+    if (a === b && b === c) {
+      console.log("Equilateral triangle.");
+    } else if (a === b || b === c || a === c) {
+      console.log("Isosceles triangle.");
+    } else {
+      console.log("Scalene triangle.");
+    }
+  }
+
+  calcHeight(baseSideIndex: number): number {
+    if (baseSideIndex < 0 || baseSideIndex >= this.sides.length) {
+      throw new Error("Invalid base side index.");
+    }
+
+    const base = this.sides[baseSideIndex];
+    if (base === 0) {
+      throw new Error("Base side cannot be zero.");
+    }
+
+    const area = this.calculateArea();
+    return (2 * area) / base;
+  }
+}
+
+class Polygon extends PolygonFigure {
+  constructor(name: string, color: string, sides: Array<number>) {
+    super(name, color, sides);
+  }
+
+  calculateArea(): number {
+    throw new Error(
+      "Cannot calculate the area of a general polygon without additional information (e.g., vertex coordinates)."
+    );
+  }
+
+  printAreaFormula(): void {
+    console.log(
+      "Area formula for a general polygon is not defined without additional data (e.g., vertex coordinates)."
+    );
+  }
+}
