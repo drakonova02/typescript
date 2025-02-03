@@ -1,240 +1,117 @@
-// Roles: student, teacher
-// Disciplines: Computer Science, Mathematics, Physics, Biology, Chemistry
-// Academic status: active, academic leave, graduated, expelledç
+// Task 1
 
-enum Role {
-    student = "student",
-    teacher = "teacher"
+type Result<T> = { status: "success"; data: T } | { status: "error"; error: string };
+
+function handleResult<T>(result: Result<T>): T {
+    if (result.status === "success") {
+      return result.data;
+    } else {
+      throw new Error(result.error);
+    }
 }
 
-enum AcademicStatus {
-    active = "active",
-    academicLeave = "academic leave",
-    graduated = "graduated",
-    expelled = "expelled"
+
+// Task 2
+
+class Queue <T> {
+  private items: Array<T> = [];
+
+  constructor(){};
+
+  enqueue(item: T): void {
+    this.items.push(item);
+  }
+
+  dequeue(): T | undefined {
+    return this.items.shift();
+  }
+
+  peek(): T {
+    if (this.size()) {
+      return this.items[0];
+    }
+
+    throw new Error("Length in Queue is 0");
+  }
+
+  size(): number {
+    return this.items.length;
+  }
 }
-  
-enum Discipline {
-    computerScience = "Computer Science",
-    mathematics = "Mathematics",
-    physics = "Physics",
-    biology = "Biology",
-    chemistry = "Chemistry"
+
+// Task 3
+
+function sortArray<T>(arr: T[], compareFn: (a: T, b: T) => number): T[] {
+  return [...arr].sort(compareFn);
 }
 
-type AcademicPerformance = {
-    totalCredits: number;
-    gpa: number;
-};
 
-class UniversityError extends Error {
-    constructor(message: string) {
-      super(message);
-      this.name = "UniversityError";
-    }
-};
-  
-class University {
-    name: string;
-    courses: Course[] = [];
-    groups: Group[] = [];
-    people: Person[] = [];
+// Task 4
 
-    constructor(name: string) {
-        this.name = name;
-    }
-
-    addCourse(course: Course): void {
-        this.courses.push(course);
-    }
-
-    addGroup(group: Group): void {
-        this.groups.push(group);
-    }
-
-    addPerson(person: Person): void {
-        this.people.push(person);
-    }
-
-    findGroupByCourse(course: Course): Group | undefined {
-        return this.groups.find((group) => group.course === course);
-    }
-
-    getAllPeopleByRole(role: string): Person[] {
-        switch (role) {
-        case Role.student:
-            return this.people.filter((person) => person.role === "student");
-        case Role.teacher:
-            return this.people.filter((person) => person.role === "teacher");
-        default:
-            return this.assertNeverRole(role);
-        }
-    }
-
-    assertNeverRole(role: string): never {
-        throw new Error(`Unhandled role: ${role}`);
-    }
-};
-  
-class Course {
-    name: string;
-    credits: number;
-    discipline: string;
-  
-    constructor(name: string, discipline: string, credits: number) {
-      this.name = name;
-      this.credits = credits;
-      this.discipline = discipline;
-    }
-};
-  
-class Group {
-    name: string;
-    course: Course;
-    teacher: Teacher;
-    students: Student[] = [];
-  
-    constructor(name: string, course: Course, teacher: Teacher) {
-      this.name = name;
-      this.course = course;
-      this.teacher = teacher;
-    }
-  
-    addStudent(student: Student): void {
-      if (this.students.includes(student)) {
-        throw new UniversityError("Student is already in the group");
-      }
-  
-      this.students.push(student);
-    }
-  
-    removeStudentById(id: number): void {
-      const index = this.students.findIndex((student) => student.id === id);
-  
-      if (!~index) {
-        throw new UniversityError("Student not found in group");
-      }
-  
-      this.students.splice(index, 1);
-    }
-  
-    getAverageGroupScore(): number {
-      if (this.students.length) {
-        return 0;
-      }
-  
-      const totalScore = this.students.reduce(
-        (sum, student) => sum + student.getAverageScore(),
-        0
-      );
-  
-      return totalScore / this.students.length;
-    }
-  
-    getStudents(): Student[] {
-      return [...this.students];
-    }
-};
-  
-class Person {
-    static nextId = 1;
-  
-    firstName: string;
-    lastName: string;
-    birthDay: Date;
-    id: number;
-    gender: string;
-    contactInfo: { email: string, phone: string };
-    role: string;
-  
-    constructor(info: { firstName: string; lastName: string; birthDay: Date; gender: string; email: string; phone: string }, role: string) {
-      const { firstName, lastName, birthDay, gender, email, phone } = info;
-  
-      this.firstName = firstName;
-      this.lastName = lastName;
-      this.birthDay = birthDay;
-      this.id = Person.nextId++;
-      this.gender = gender;
-      this.contactInfo = { email, phone };
-      this.role = role;
-    }
-  
-    get fullName(): string {
-      return `${this.lastName} ${this.firstName}`;
-    }
-  
-    get age(): number {
-      const today = new Date();
-      let age = today.getFullYear() - this.birthDay.getFullYear();
-      const monthDiff = today.getMonth() - this.birthDay.getMonth();
-  
-      if (
-        monthDiff < 0 ||
-        (monthDiff === 0 && today.getDate() < this.birthDay.getDate())
-      ) {
-        age--;
-      }
-  
-      return age;
-    }
-};
-  
-class Teacher extends Person {
-    specializations: string[] = [];
-    courses: Course[] = [];
-  
-    constructor(info: { firstName: string; lastName: string; birthDay: Date; gender: string; email: string; phone: string }, specializations: string[] = []) {
-      super(info, Role.teacher);
-      this.specializations = specializations;
-    }
-  
-    assignCourse(course: Course): void {
-      this.courses.push(course);
-    }
-  
-    removeCourse(courseName: string): void {
-      this.courses = this.courses.filter((course) => course.name !== courseName);
-    }
-  
-    getCourses(): Course[] {
-      return [...this.courses];
-    }
-};
-  
-class Student extends Person {
-    academicPerformance: AcademicPerformance = {
-        totalCredits: 0,
-        gpa: 0,
-    };
-    enrolledCourses: Course[] = [];
-    status: string;
-  
-    constructor(info: { firstName: string; lastName: string; birthDay: Date; gender: string; email: string; phone: string }) {
-      super(info, Role.student);
-      this.status = AcademicStatus.active;
-    }
-  
-    enrollCourse(course: Course): void {
-      if (this.status !== AcademicStatus.active) {
-        throw new UniversityError(
-          "Cannot enroll: Student is not in active status"
-        );
-      }
-  
-      this.enrolledCourses.push(course);
-      this.academicPerformance.totalCredits += course.credits;
-    }
-  
-    getAverageScore(): number {
-      return this.academicPerformance.gpa;
-    }
-  
-    updateAcademicStatus(newStatus: AcademicStatus): void {
-      this.status = newStatus;
-    }
-  
-    getEnrolledCourses(): Course[] {
-      return [...this.enrolledCourses];
-    }
+function extractProperty<T, K extends keyof T>(obj: T, key: K): T[K] {
+  return obj[key];
 }
-  
+
+
+// Task 5
+
+interface Identifiable<T> {
+  id: T;
+}
+
+class Repository<T extends Identifiable<K>, K> {
+  private items: Array<T> = [];
+
+  add(item: T): void {
+    this.items.push(item);
+  }
+
+  getById(id: K): T | undefined {
+    return this.items.find((item) => {return item.id === id});
+  }
+
+  removeById(id: K): boolean {
+    const index: number = this.items.findIndex(item => item.id === id);
+    
+    if(index !== -1) {
+      this.items.splice(index, 1);
+
+      return true;
+    }
+
+    return false;
+  }
+
+  getAll(): Array<T> {
+    return [...this.items];
+  }
+}
+
+class User implements Identifiable<number> {
+  constructor(public id: number, public name: string, public age: number) {}
+}
+
+class Product implements Identifiable<string> {
+  constructor(public id: string, public name: string, public price: number) {}
+}
+
+const userRepository = new Repository<User, number>();
+userRepository.add(new User(1, "Alice", 25));
+userRepository.add(new User(2, "Bob", 30));
+
+console.log("Користувачі:", userRepository.getAll());
+console.log("Отримати користувача з id 1:", userRepository.getById(1));
+
+console.log("Видалити користувача з id 1:", userRepository.removeById(1));
+console.log("Користувачі після видалення:", userRepository.getAll());
+
+
+const productRepository = new Repository<Product, string>();
+productRepository.add(new Product("p1", "Laptop", 1200));
+productRepository.add(new Product("p2", "Phone", 800));
+
+console.log("Продукти:", productRepository.getAll());
+console.log("Отримати продукт з id 'p2':", productRepository.getById("p2"));
+
+console.log("Видалити продукт з id 'p2':", productRepository.removeById("p2"));
+console.log("Продукти після видалення:", productRepository.getAll());
