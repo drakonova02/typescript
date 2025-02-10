@@ -1,117 +1,81 @@
 // Task 1
 
-type Result<T> = { status: "success"; data: T } | { status: "error"; error: string };
-
-function handleResult<T>(result: Result<T>): T {
-    if (result.status === "success") {
-      return result.data;
-    } else {
-      throw new Error(result.error);
-    }
+function sortArray<T>(arr: T[], compareFn: (a: T, b: T) => number): T[];
+function sortArray<T, K extends keyof T>(arr: T[], key: K): T[];
+function sortArray<T, K extends keyof T>(
+  arr: T[], 
+  param: ((a: T, b: T) => number) | K
+): T[] {
+  if (typeof param === "function") {
+    return [...arr].sort(param);
+  } else {
+    return [...arr].sort((a, b) => {
+      if (a[param] < b[param]) return -1;
+      if (a[param] > b[param]) return 1;
+      return 0;
+    });
+  }
 }
+
+const numbers = [5, 3, 8, 1];
+console.log(sortArray(numbers, (a, b) => a - b));
+
+const users = [
+  { name: "Alice", age: 25 },
+  { name: "Bob", age: 22 },
+  { name: "Charlie", age: 30 }
+];
+console.log(sortArray(users, "age"));
 
 
 // Task 2
 
-class Queue <T> {
-  private items: Array<T> = [];
-
-  constructor(){};
-
-  enqueue(item: T): void {
-    this.items.push(item);
-  }
-
-  dequeue(): T | undefined {
-    return this.items.shift();
-  }
-
-  peek(): T {
-    if (this.size()) {
-      return this.items[0];
-    }
-
-    throw new Error("Length in Queue is 0");
-  }
-
-  size(): number {
-    return this.items.length;
-  }
+type DeepReadonly<T> = {
+  +readonly [P in keyof T]: T[P] extends object ? DeepReadonly<T[P]> : T[P];
 }
+
 
 // Task 3
 
-function sortArray<T>(arr: T[], compareFn: (a: T, b: T) => number): T[] {
-  return [...arr].sort(compareFn);
+type DeepRequireReadonly<T> = {
+  +readonly [P in keyof T]-?: T[P] extends object ? DeepRequireReadonly<T[P]> : T[P];
 }
 
 
 // Task 4
 
-function extractProperty<T, K extends keyof T>(obj: T, key: K): T[K] {
-  return obj[key];
-}
-
+type PartialByKeys<T, K extends keyof T> = {
+  [P in keyof T]: T[P];
+} & { [P in K]?: T[P] };
 
 // Task 5
 
-interface Identifiable<T> {
-  id: T;
+type ReadonlyByKeys<T, K extends keyof T> = {
+  [P in keyof T]: T[P];
+} & { +readonly [P in K]: T[P] };
+
+// Task 6
+
+type MutableByKeys<T, K extends keyof T> = {
+  [P in keyof T]: T[P];
+} & { -readonly [P in K]: T[P] };
+
+
+// Task 7
+
+type UpperCaseKeys<T> = {
+  [P in keyof T as Uppercase<string & P>]: T[P];
 }
 
-class Repository<T extends Identifiable<K>, K> {
-  private items: Array<T> = [];
+// Task 8
 
-  add(item: T): void {
-    this.items.push(item);
-  }
+type CustomPropertyDescriptor<T> = {
+  value: T;
+  writable: boolean;
+  enumerable: boolean;
+  configurable: boolean;
+};
 
-  getById(id: K): T | undefined {
-    return this.items.find((item) => {return item.id === id});
-  }
-
-  removeById(id: K): boolean {
-    const index: number = this.items.findIndex(item => item.id === id);
-    
-    if(index !== -1) {
-      this.items.splice(index, 1);
-
-      return true;
-    }
-
-    return false;
-  }
-
-  getAll(): Array<T> {
-    return [...this.items];
-  }
-}
-
-class User implements Identifiable<number> {
-  constructor(public id: number, public name: string, public age: number) {}
-}
-
-class Product implements Identifiable<string> {
-  constructor(public id: string, public name: string, public price: number) {}
-}
-
-const userRepository = new Repository<User, number>();
-userRepository.add(new User(1, "Alice", 25));
-userRepository.add(new User(2, "Bob", 30));
-
-console.log("Користувачі:", userRepository.getAll());
-console.log("Отримати користувача з id 1:", userRepository.getById(1));
-
-console.log("Видалити користувача з id 1:", userRepository.removeById(1));
-console.log("Користувачі після видалення:", userRepository.getAll());
-
-
-const productRepository = new Repository<Product, string>();
-productRepository.add(new Product("p1", "Laptop", 1200));
-productRepository.add(new Product("p2", "Phone", 800));
-
-console.log("Продукти:", productRepository.getAll());
-console.log("Отримати продукт з id 'p2':", productRepository.getById("p2"));
-
-console.log("Видалити продукт з id 'p2':", productRepository.removeById("p2"));
-console.log("Продукти після видалення:", productRepository.getAll());
+type ObjectToPropertyDescriptor<T> = {
+  [P in keyof T]: CustomPropertyDescriptor<T[P]>;
+};
