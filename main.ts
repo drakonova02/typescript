@@ -25,13 +25,21 @@ function DeprecatedMinLength(minValue: number) {
   return function<T>(originalProperty: undefined, context: ClassFieldDecoratorContext<T>) {
     if (context.kind !== 'field') throw new Error('Field-only decorator');
 
-    function updatedProperty(this: T, origianlValue: number): number {
-      if(origianlValue < minValue) throw Error('Min');
+    let origianlValue: number;
 
-      return origianlValue;
-    }
-  
-    return updatedProperty;
+    Object.defineProperty(context, 'value', {
+      get() {
+        return origianlValue;
+      },
+      set(newValue: number) {
+        if (newValue < minValue) throw new Error('Min');
+        origianlValue = newValue;
+      },
+      enumerable: true,
+      configurable: true
+    });
+
+    return originalProperty;
   }
 }
 
@@ -39,27 +47,42 @@ function DeprecatedMaxLength(maxValue: number) {
   return function<T>(originalProperty: undefined, context: ClassFieldDecoratorContext<T>) {
     if (context.kind !== 'field') throw new Error('Field-only decorator');
 
-    function updatedProperty(this: T, origianlValue: number): number {
-      if(origianlValue > maxValue) throw Error('Max');
+    let origianlValue: number;
 
-      return origianlValue;
-    }
+    Object.defineProperty(context, 'value', {
+      get() {
+        return origianlValue;
+      },
+      set(newValue: number) {
+        if (newValue > maxValue) throw new Error('Max');
+        origianlValue = newValue;
+      },
+      enumerable: true,
+      configurable: true
+    });
   
-    return updatedProperty;
+    return originalProperty;
   }
 }
 
 function DeprecatedEmail<T>(originalProperty: undefined, context: ClassFieldDecoratorContext<T>) {
   if (context.kind !== 'field') throw new Error('Field-only decorator');
 
-  function updatedProperty(this: T, origianlValue: string): string {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  let value: string;
 
-    if (!emailRegex.test(origianlValue)) throw new Error(`${origianlValue} має бути валідною email-адресою.`);
+  Object.defineProperty(context, 'value', {
+    get() {
+      return value;
+    },
+    set(newValue: string) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(newValue)) throw new Error(`${newValue} має бути валідною email-адресою.`);
+      value = newValue;
+    },
+    enumerable: true,
+    configurable: true
+  });
 
-    return origianlValue;
-  }
-
-  return updatedProperty;
+  return originalProperty;
 }
 
