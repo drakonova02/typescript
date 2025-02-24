@@ -20,7 +20,7 @@ class Note {
   }
 }
 
-class ImportantNote extends Note {
+class SpecificNote extends Note {
   constructor(title: string, content: string, status: "active" | "completed") {
     super(title, content, status);
   }
@@ -47,7 +47,7 @@ class TodoList {
     if (index < 0 || index >= this.notes.length) throw new Error("Invalid note index");
 
     const note = this.notes[index];
-    if (note instanceof ImportantNote && !(note as ImportantNote).delete()) return;
+    if (note instanceof SpecificNote && !(note as SpecificNote).delete()) return;
 
     this.notes.splice(index, 1);
     console.log(`Note "${note.title}" deleted.`);
@@ -106,7 +106,7 @@ class TodoList {
 const myTodo = new TodoList();
 
 const note1 = new Note("Buy shoose", "Don't forget to buy", "active");
-const note2 = new ImportantNote("Important call", "Call mother", "active");
+const note2 = new SpecificNote("Important call", "Call mother", "active");
 
 myTodo.add(note1);
 myTodo.add(note2);
