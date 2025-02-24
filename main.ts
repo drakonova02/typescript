@@ -1,240 +1,128 @@
-// Roles: student, teacher
-// Disciplines: Computer Science, Mathematics, Physics, Biology, Chemistry
-// Academic status: active, academic leave, graduated, expelledç
+class Note {
+  public readonly createdAt: Date = new Date();
+  public updatedAt: Date;
 
-enum Role {
-    student = "student",
-    teacher = "teacher"
+  constructor(public title: string, public content: string, public status: "active" | "completed") {
+    if (!title.trim() || !content.trim()) throw new Error("Title and content cannot be empty");
+
+    this.updatedAt = new Date();
+  }
+
+  edit(newContent: string) {
+    if (!newContent.trim()) throw new Error("Content cannot be empty");
+    this.content = newContent;
+    this.updatedAt = new Date();
+  }
+
+  markAsCompleted() {
+    this.status = "completed";
+    this.updatedAt = new Date();
+  }
 }
 
-enum AcademicStatus {
-    active = "active",
-    academicLeave = "academic leave",
-    graduated = "graduated",
-    expelled = "expelled"
+class ImportantNote extends Note {
+  constructor(title: string, content: string, status: "active" | "completed") {
+    super(title, content, status);
+  }
+
+  edit(newContent: string) {
+    if (!confirm(`Are you sure you want to edit the note "${this.title}"?`)) return;
+    super.edit(newContent);
+  }
+
+  delete(): boolean {
+    return confirm(`Are you sure you want to delete the note "${this.title}"?`);
+  }
 }
-  
-enum Discipline {
-    computerScience = "Computer Science",
-    mathematics = "Mathematics",
-    physics = "Physics",
-    biology = "Biology",
-    chemistry = "Chemistry"
-}
 
-type AcademicPerformance = {
-    totalCredits: number;
-    gpa: number;
-};
+class TodoList {
+  private notes: Note[] = [];
 
-class UniversityError extends Error {
-    constructor(message: string) {
-      super(message);
-      this.name = "UniversityError";
-    }
-};
-  
-class University {
-    name: string;
-    courses: Course[] = [];
-    groups: Group[] = [];
-    people: Person[] = [];
+  add(note: Note) {
+    this.notes.push(note);
+    console.log(`Note "${note.title}" added.`);
+  }
 
-    constructor(name: string) {
-        this.name = name;
-    }
+  delete(index: number) {
+    if (index < 0 || index >= this.notes.length) throw new Error("Invalid note index");
 
-    addCourse(course: Course): void {
-        this.courses.push(course);
-    }
+    const note = this.notes[index];
+    if (note instanceof ImportantNote && !(note as ImportantNote).delete()) return;
 
-    addGroup(group: Group): void {
-        this.groups.push(group);
-    }
+    this.notes.splice(index, 1);
+    console.log(`Note "${note.title}" deleted.`);
+  }
 
-    addPerson(person: Person): void {
-        this.people.push(person);
-    }
+  edit(index: number, newContent: string) {
+    if (index < 0 || index >= this.notes.length) throw new Error("Invalid note index");
 
-    findGroupByCourse(course: Course): Group | undefined {
-        return this.groups.find((group) => group.course === course);
-    }
+    this.notes[index].edit(newContent);
+    console.log(`Note "${this.notes[index].title}" edited.`);
+  }
 
-    getAllPeopleByRole(role: string): Person[] {
-        switch (role) {
-        case Role.student:
-            return this.people.filter((person) => person.role === "student");
-        case Role.teacher:
-            return this.people.filter((person) => person.role === "teacher");
-        default:
-            return this.assertNeverRole(role);
-        }
-    }
+  markAsCompleted(index: number) {
+    if (index < 0 || index >= this.notes.length) throw new Error("Invalid note index");
 
-    assertNeverRole(role: string): never {
-        throw new Error(`Unhandled role: ${role}`);
-    }
-};
-  
-class Course {
-    name: string;
-    credits: number;
-    discipline: string;
-  
-    constructor(name: string, discipline: string, credits: number) {
-      this.name = name;
-      this.credits = credits;
-      this.discipline = discipline;
-    }
-};
-  
-class Group {
-    name: string;
-    course: Course;
-    teacher: Teacher;
-    students: Student[] = [];
-  
-    constructor(name: string, course: Course, teacher: Teacher) {
-      this.name = name;
-      this.course = course;
-      this.teacher = teacher;
-    }
-  
-    addStudent(student: Student): void {
-      if (this.students.includes(student)) {
-        throw new UniversityError("Student is already in the group");
-      }
-  
-      this.students.push(student);
-    }
-  
-    removeStudentById(id: number): void {
-      const index = this.students.findIndex((student) => student.id === id);
-  
-      if (!~index) {
-        throw new UniversityError("Student not found in group");
-      }
-  
-      this.students.splice(index, 1);
-    }
-  
-    getAverageGroupScore(): number {
-      if (this.students.length) {
-        return 0;
-      }
-  
-      const totalScore = this.students.reduce(
-        (sum, student) => sum + student.getAverageScore(),
-        0
+    this.notes[index].markAsCompleted();
+    console.log(`Note "${this.notes[index].title}" marked as completed.`);
+  }
+
+  getNoteInfo(index: number) {
+    if (index < 0 || index >= this.notes.length) throw new Error("Invalid note index");
+
+    const note = this.notes[index];
+    return `Title: ${note.title}\nContent: ${note.content}\nStatus: ${note.status}\nCreated: ${note.createdAt.toLocaleString()}\nUpdated: ${note.updatedAt.toLocaleString()}`;
+  }
+
+  list() {
+    console.log("Notes list:");
+    this.notes.forEach((note, i) => {
+      console.log(
+        `${i + 1}. ${note.title} [${note.status}] - Created: ${note.createdAt.toLocaleString()}, Updated: ${note.updatedAt.toLocaleString()}`
       );
-  
-      return totalScore / this.students.length;
+    });
+  }
+
+  count() {
+    const total = this.notes.length;
+    const remaining = this.notes.filter((note) => note.status === "active").length;
+    return `Total notes: ${total}, Uncompleted: ${remaining}`;
+  }
+
+  search(query: string) {
+    return this.notes.filter((note) => note.title.includes(query) || note.content.includes(query));
+  }
+
+  sort(by: "status" | "date") {
+    if (by === "status") {
+      this.notes.sort((a, b) => a.status.localeCompare(b.status));
+    } else if (by === "date") {
+      this.notes.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
     }
-  
-    getStudents(): Student[] {
-      return [...this.students];
-    }
-};
-  
-class Person {
-    static nextId = 1;
-  
-    firstName: string;
-    lastName: string;
-    birthDay: Date;
-    id: number;
-    gender: string;
-    contactInfo: { email: string, phone: string };
-    role: string;
-  
-    constructor(info: { firstName: string; lastName: string; birthDay: Date; gender: string; email: string; phone: string }, role: string) {
-      const { firstName, lastName, birthDay, gender, email, phone } = info;
-  
-      this.firstName = firstName;
-      this.lastName = lastName;
-      this.birthDay = birthDay;
-      this.id = Person.nextId++;
-      this.gender = gender;
-      this.contactInfo = { email, phone };
-      this.role = role;
-    }
-  
-    get fullName(): string {
-      return `${this.lastName} ${this.firstName}`;
-    }
-  
-    get age(): number {
-      const today = new Date();
-      let age = today.getFullYear() - this.birthDay.getFullYear();
-      const monthDiff = today.getMonth() - this.birthDay.getMonth();
-  
-      if (
-        monthDiff < 0 ||
-        (monthDiff === 0 && today.getDate() < this.birthDay.getDate())
-      ) {
-        age--;
-      }
-  
-      return age;
-    }
-};
-  
-class Teacher extends Person {
-    specializations: string[] = [];
-    courses: Course[] = [];
-  
-    constructor(info: { firstName: string; lastName: string; birthDay: Date; gender: string; email: string; phone: string }, specializations: string[] = []) {
-      super(info, Role.teacher);
-      this.specializations = specializations;
-    }
-  
-    assignCourse(course: Course): void {
-      this.courses.push(course);
-    }
-  
-    removeCourse(courseName: string): void {
-      this.courses = this.courses.filter((course) => course.name !== courseName);
-    }
-  
-    getCourses(): Course[] {
-      return [...this.courses];
-    }
-};
-  
-class Student extends Person {
-    academicPerformance: AcademicPerformance = {
-        totalCredits: 0,
-        gpa: 0,
-    };
-    enrolledCourses: Course[] = [];
-    status: string;
-  
-    constructor(info: { firstName: string; lastName: string; birthDay: Date; gender: string; email: string; phone: string }) {
-      super(info, Role.student);
-      this.status = AcademicStatus.active;
-    }
-  
-    enrollCourse(course: Course): void {
-      if (this.status !== AcademicStatus.active) {
-        throw new UniversityError(
-          "Cannot enroll: Student is not in active status"
-        );
-      }
-  
-      this.enrolledCourses.push(course);
-      this.academicPerformance.totalCredits += course.credits;
-    }
-  
-    getAverageScore(): number {
-      return this.academicPerformance.gpa;
-    }
-  
-    updateAcademicStatus(newStatus: AcademicStatus): void {
-      this.status = newStatus;
-    }
-  
-    getEnrolledCourses(): Course[] {
-      return [...this.enrolledCourses];
-    }
+  }
 }
-  
+
+// Example usage
+const myTodo = new TodoList();
+
+const note1 = new Note("Buy shoose", "Don't forget to buy", "active");
+const note2 = new ImportantNote("Important call", "Call mother", "active");
+
+myTodo.add(note1);
+myTodo.add(note2);
+myTodo.list();
+
+myTodo.edit(0, "Buy milk and bread");
+myTodo.markAsCompleted(0);
+
+console.log(myTodo.getNoteInfo(0));
+
+myTodo.delete(1);
+myTodo.list();
+
+console.log(myTodo.count());
+
+console.log("Search results:", myTodo.search("milk"));
+
+myTodo.sort("status");
+myTodo.list();
