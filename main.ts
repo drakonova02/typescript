@@ -1,240 +1,162 @@
-// Roles: student, teacher
-// Disciplines: Computer Science, Mathematics, Physics, Biology, Chemistry
-// Academic status: active, academic leave, graduated, expelledç
-
-enum Role {
-    student = "student",
-    teacher = "teacher"
+interface IBankAccount {
+  readonly accountNumber: string;
+  readonly balance: number;
+  owner: Client;
+  deposit(amount: number): void;
+  withdraw(amount: number): void;
 }
 
-enum AcademicStatus {
-    active = "active",
-    academicLeave = "academic leave",
-    graduated = "graduated",
-    expelled = "expelled"
+type TransactionType = "deposit" | "withdraw";
+
+class Client {
+  private readonly firstName: string;
+  private readonly lastName: string;
+
+  public get fullName(): string {
+    return `${this.firstName} ${this.lastName}`;
+  }
+
+  constructor(firstName: string, lastName: string) {
+    this.firstName = firstName;
+    this.lastName = lastName;
+  }
 }
-  
-enum Discipline {
-    computerScience = "Computer Science",
-    mathematics = "Mathematics",
-    physics = "Physics",
-    biology = "Biology",
-    chemistry = "Chemistry"
+
+class Transaction {
+  public readonly amount: number;
+  public readonly date = Date.now();
+  public readonly id: number;
+  public readonly type: TransactionType;
+
+  constructor(type: TransactionType, amount: number, id: number) {
+    this.amount = amount;
+    this.id = id;
+    this.type = type;
+  }
 }
 
-type AcademicPerformance = {
-    totalCredits: number;
-    gpa: number;
-};
+class TransactionHistory {
+  private readonly _transactions: Transaction[] = [];
 
-class UniversityError extends Error {
-    constructor(message: string) {
-      super(message);
-      this.name = "UniversityError";
-    }
-};
-  
-class University {
-    name: string;
-    courses: Course[] = [];
-    groups: Group[] = [];
-    people: Person[] = [];
+  public get transactions(): ReadonlyArray<Transaction> {
+    return this._transactions;
+  }
 
-    constructor(name: string) {
-        this.name = name;
-    }
-
-    addCourse(course: Course): void {
-        this.courses.push(course);
-    }
-
-    addGroup(group: Group): void {
-        this.groups.push(group);
-    }
-
-    addPerson(person: Person): void {
-        this.people.push(person);
-    }
-
-    findGroupByCourse(course: Course): Group | undefined {
-        return this.groups.find((group) => group.course === course);
-    }
-
-    getAllPeopleByRole(role: string): Person[] {
-        switch (role) {
-        case Role.student:
-            return this.people.filter((person) => person.role === "student");
-        case Role.teacher:
-            return this.people.filter((person) => person.role === "teacher");
-        default:
-            return this.assertNeverRole(role);
-        }
-    }
-
-    assertNeverRole(role: string): never {
-        throw new Error(`Unhandled role: ${role}`);
-    }
-};
-  
-class Course {
-    name: string;
-    credits: number;
-    discipline: string;
-  
-    constructor(name: string, discipline: string, credits: number) {
-      this.name = name;
-      this.credits = credits;
-      this.discipline = discipline;
-    }
-};
-  
-class Group {
-    name: string;
-    course: Course;
-    teacher: Teacher;
-    students: Student[] = [];
-  
-    constructor(name: string, course: Course, teacher: Teacher) {
-      this.name = name;
-      this.course = course;
-      this.teacher = teacher;
-    }
-  
-    addStudent(student: Student): void {
-      if (this.students.includes(student)) {
-        throw new UniversityError("Student is already in the group");
-      }
-  
-      this.students.push(student);
-    }
-  
-    removeStudentById(id: number): void {
-      const index = this.students.findIndex((student) => student.id === id);
-  
-      if (!~index) {
-        throw new UniversityError("Student not found in group");
-      }
-  
-      this.students.splice(index, 1);
-    }
-  
-    getAverageGroupScore(): number {
-      if (this.students.length) {
-        return 0;
-      }
-  
-      const totalScore = this.students.reduce(
-        (sum, student) => sum + student.getAverageScore(),
-        0
-      );
-  
-      return totalScore / this.students.length;
-    }
-  
-    getStudents(): Student[] {
-      return [...this.students];
-    }
-};
-  
-class Person {
-    static nextId = 1;
-  
-    firstName: string;
-    lastName: string;
-    birthDay: Date;
-    id: number;
-    gender: string;
-    contactInfo: { email: string, phone: string };
-    role: string;
-  
-    constructor(info: { firstName: string; lastName: string; birthDay: Date; gender: string; email: string; phone: string }, role: string) {
-      const { firstName, lastName, birthDay, gender, email, phone } = info;
-  
-      this.firstName = firstName;
-      this.lastName = lastName;
-      this.birthDay = birthDay;
-      this.id = Person.nextId++;
-      this.gender = gender;
-      this.contactInfo = { email, phone };
-      this.role = role;
-    }
-  
-    get fullName(): string {
-      return `${this.lastName} ${this.firstName}`;
-    }
-  
-    get age(): number {
-      const today = new Date();
-      let age = today.getFullYear() - this.birthDay.getFullYear();
-      const monthDiff = today.getMonth() - this.birthDay.getMonth();
-  
-      if (
-        monthDiff < 0 ||
-        (monthDiff === 0 && today.getDate() < this.birthDay.getDate())
-      ) {
-        age--;
-      }
-  
-      return age;
-    }
-};
-  
-class Teacher extends Person {
-    specializations: string[] = [];
-    courses: Course[] = [];
-  
-    constructor(info: { firstName: string; lastName: string; birthDay: Date; gender: string; email: string; phone: string }, specializations: string[] = []) {
-      super(info, Role.teacher);
-      this.specializations = specializations;
-    }
-  
-    assignCourse(course: Course): void {
-      this.courses.push(course);
-    }
-  
-    removeCourse(courseName: string): void {
-      this.courses = this.courses.filter((course) => course.name !== courseName);
-    }
-  
-    getCourses(): Course[] {
-      return [...this.courses];
-    }
-};
-  
-class Student extends Person {
-    academicPerformance: AcademicPerformance = {
-        totalCredits: 0,
-        gpa: 0,
-    };
-    enrolledCourses: Course[] = [];
-    status: string;
-  
-    constructor(info: { firstName: string; lastName: string; birthDay: Date; gender: string; email: string; phone: string }) {
-      super(info, Role.student);
-      this.status = AcademicStatus.active;
-    }
-  
-    enrollCourse(course: Course): void {
-      if (this.status !== AcademicStatus.active) {
-        throw new UniversityError(
-          "Cannot enroll: Student is not in active status"
-        );
-      }
-  
-      this.enrolledCourses.push(course);
-      this.academicPerformance.totalCredits += course.credits;
-    }
-  
-    getAverageScore(): number {
-      return this.academicPerformance.gpa;
-    }
-  
-    updateAcademicStatus(newStatus: AcademicStatus): void {
-      this.status = newStatus;
-    }
-  
-    getEnrolledCourses(): Course[] {
-      return [...this.enrolledCourses];
-    }
+  public addTransaction(type: TransactionType, amount: number): void {
+    this._transactions.push(new Transaction(type, amount, 42));
+  }
 }
-  
+
+class Bank {
+  private static instance: Bank;
+  private accounts = new Map<string, BankAccount>();
+
+  private constructor() {}
+
+  public static getInstance(): Bank {
+    if (!Bank.instance) {
+      Bank.instance = new Bank();
+    }
+    return Bank.instance;
+  }
+
+  public createAccount(owner: Client, balance: number, currency: string): BankAccount {
+    const account = new BankAccount(owner, balance, currency);
+    this.accounts.set(account.accountNumber, account);
+    return account;
+  }
+
+  public closeAccount(accountNumber: string): void {
+    this.accounts.delete(accountNumber);
+  }
+}
+
+class BankAccount implements IBankAccount {
+  private _balance: number;
+  private _owner: Client;
+  public readonly currency: string;
+  public readonly accountNumber = this.generateAccountNumber();
+
+  constructor(owner: Client, balance: number, currency: string) {
+    this._balance = balance;
+    this._owner = owner;
+    this.currency = currency;
+  }
+
+  public get balance(): number {
+    return this._balance;
+  }
+
+  public get owner(): Client {
+    return this._owner;
+  }
+
+  public set owner(value: Client) {
+    this._owner = value;
+  }
+
+  public deposit(amount: number): void {
+    this._balance += amount;
+    console.info(`Deposit: ${amount} ${this.currency}. New Balance: ${this.balance} ${this.currency}`);
+  }
+
+  public withdraw(amount: number): void {
+    if (amount > this._balance) {
+      console.warn("Insufficient funds!");
+      return;
+    }
+    this._balance -= amount;
+    console.info(`Withdraw: ${amount} ${this.currency}. New Balance: ${this.balance} ${this.currency}`);
+  }
+
+  private generateAccountNumber(): string {
+    return `ACC-${Math.floor(Math.random() * 100000)}`;
+  }
+}
+
+interface Command {
+  execute(): void;
+  undo(): void;
+}
+
+class DepositCommand implements Command {
+  constructor(private account: BankAccount, private amount: number) {}
+  execute(): void {
+    this.account.deposit(this.amount);
+  }
+  undo(): void {
+    this.account.withdraw(this.amount);
+  }
+}
+
+class WithdrawCommand implements Command {
+  constructor(private account: BankAccount, private amount: number) {}
+  execute(): void {
+    this.account.withdraw(this.amount);
+  }
+  undo(): void {
+    this.account.deposit(this.amount);
+  }
+}
+
+class TransactionQueue {
+  private queue: Command[] = [];
+  private history: Command[] = [];
+
+  public addTransaction(command: Command): void {
+    this.queue.push(command);
+  }
+
+  public processTransactions(): void {
+    while (this.queue.length) {
+      const command = this.queue.shift();
+      command?.execute();
+      this.history.push(command!);
+    }
+  }
+
+  public undoLastTransaction(): void {
+    const command = this.history.pop();
+    command?.undo();
+  }
+}
