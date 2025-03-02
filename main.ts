@@ -30,9 +30,9 @@ type BlockUserAction = {
   };
 }
 
-type Action = CreateUserAction | DeleteUserAction | UpdateUserAction | BlockUserAction;
+export type Action = CreateUserAction | DeleteUserAction | UpdateUserAction | BlockUserAction;
 
-function handleAction(action: Action): void {
+export function handleAction(action: Action): void {
   switch (action.type) {
     case 'CREATE_USER': {
       const { name, age } = action.payload;
