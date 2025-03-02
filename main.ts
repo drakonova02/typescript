@@ -36,7 +36,7 @@ abstract class CirculeFigure extends Figure {
   }
 }
 
-class Circle extends CirculeFigure {
+export class Circle extends CirculeFigure {
   constructor(
     public readonly name: string,
     public readonly color: string,
@@ -54,7 +54,7 @@ class Circle extends CirculeFigure {
   }
 }
 
-class Ellipse extends CirculeFigure {
+export class Ellipse extends CirculeFigure {
   constructor(
     public readonly name: string,
     public readonly color: string,
@@ -98,7 +98,7 @@ abstract class PolygonFigure extends Figure {
   abstract printAreaFormula(): void;
 }
 
-class Rectangle extends PolygonFigure {
+export class Rectangle extends PolygonFigure {
   constructor(name: string, color: string, sides: Array<number>) {
     super(name, color, sides);
     if (sides.length !== 2) {
@@ -115,7 +115,7 @@ class Rectangle extends PolygonFigure {
   }
 }
 
-class Square extends PolygonFigure {
+export class Square extends PolygonFigure {
   constructor(name: string, color: string, sides: Array<number>) {
     super(name, color, sides);
     if (sides.length !== 1) {
@@ -132,7 +132,7 @@ class Square extends PolygonFigure {
   }
 }
 
-class Triangle extends PolygonFigure {
+export class Triangle extends PolygonFigure {
   constructor(name: string, color: string, sides: Array<number>) {
     super(name, color, sides);
 
@@ -186,7 +186,7 @@ class Triangle extends PolygonFigure {
   }
 }
 
-class Polygon extends PolygonFigure {
+export class Polygon extends PolygonFigure {
   constructor(name: string, color: string, sides: Array<number>) {
     super(name, color, sides);
   }
