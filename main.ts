@@ -1,6 +1,6 @@
 // Task 1
 
-function DeprecatedMethod(reason: string, alternative: string) {
+export function DeprecatedMethod(reason: string, alternative: string) {
   return function<T, A extends any[], R>(
     originalMethod: (...args: A) => R,
     context: ClassMethodDecoratorContext<T, (...args: A) => R>
@@ -21,7 +21,7 @@ function DeprecatedMethod(reason: string, alternative: string) {
 
 // Task 2
 
-function DeprecatedMinLength(minValue: number) {
+export function DeprecatedMinLength(minValue: number) {
   return function<T>(originalProperty: undefined, context: ClassFieldDecoratorContext<T>) {
     if (context.kind !== 'field') throw new Error('Field-only decorator');
 
@@ -43,7 +43,7 @@ function DeprecatedMinLength(minValue: number) {
   }
 }
 
-function DeprecatedMaxLength(maxValue: number) {
+export function DeprecatedMaxLength(maxValue: number) {
   return function<T>(originalProperty: undefined, context: ClassFieldDecoratorContext<T>) {
     if (context.kind !== 'field') throw new Error('Field-only decorator');
 
@@ -65,7 +65,7 @@ function DeprecatedMaxLength(maxValue: number) {
   }
 }
 
-function DeprecatedEmail<T>(originalProperty: undefined, context: ClassFieldDecoratorContext<T>) {
+export function DeprecatedEmail<T>(originalProperty: undefined, context: ClassFieldDecoratorContext<T>) {
   if (context.kind !== 'field') throw new Error('Field-only decorator');
 
   let value: string;
