@@ -38,14 +38,14 @@ interface IAuthor {
     name: string;
 }
 
-class LibraryError extends Error {
+export class LibraryError extends Error {
     constructor(message: string) {
       super(message);
       this.name = "LibraryError";
     }
 };
 
-class Library implements IBookService {
+export class Library implements IBookService {
     name: string;
     books: Book[];
     authors: Author[];
@@ -119,7 +119,7 @@ class Library implements IBookService {
     }
 }
 
-class Book implements IBook {
+export class Book implements IBook {
     static nextId = 1;
   
     title: string;
@@ -138,7 +138,7 @@ class Book implements IBook {
     }
 }
 
-class Author implements IAuthor {
+export class Author implements IAuthor {
     static nextId = 1;
   
     name: string;
