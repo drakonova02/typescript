@@ -1,4 +1,4 @@
-class Note {
+export class Note {
   public readonly createdAt: Date = new Date();
   public updatedAt: Date;
 
@@ -20,7 +20,7 @@ class Note {
   }
 }
 
-class SpecificNote extends Note {
+export class SpecificNote extends Note {
   constructor(title: string, content: string, status: "active" | "completed") {
     super(title, content, status);
   }
@@ -35,7 +35,7 @@ class SpecificNote extends Note {
   }
 }
 
-class TodoList {
+export class TodoList {
   private notes: Note[] = [];
 
   add(note: Note) {
