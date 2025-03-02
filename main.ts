@@ -8,7 +8,7 @@ interface IBankAccount {
 
 type TransactionType = "deposit" | "withdraw";
 
-class Client {
+export class Client {
   private readonly firstName: string;
   private readonly lastName: string;
 
@@ -35,7 +35,7 @@ class Transaction {
   }
 }
 
-class TransactionHistory {
+export class TransactionHistory {
   private readonly _transactions: Transaction[] = [];
 
   public get transactions(): ReadonlyArray<Transaction> {
@@ -71,7 +71,7 @@ class Bank {
   }
 }
 
-class BankAccount implements IBankAccount {
+export class BankAccount implements IBankAccount {
   private _balance: number;
   private _owner: Client;
   public readonly currency: string;
@@ -119,7 +119,7 @@ interface Command {
   undo(): void;
 }
 
-class DepositCommand implements Command {
+export class DepositCommand implements Command {
   constructor(private account: BankAccount, private amount: number) {}
   execute(): void {
     this.account.deposit(this.amount);
@@ -129,7 +129,7 @@ class DepositCommand implements Command {
   }
 }
 
-class WithdrawCommand implements Command {
+export class WithdrawCommand implements Command {
   constructor(private account: BankAccount, private amount: number) {}
   execute(): void {
     this.account.withdraw(this.amount);
@@ -139,7 +139,7 @@ class WithdrawCommand implements Command {
   }
 }
 
-class TransactionQueue {
+export class TransactionQueue {
   private queue: Command[] = [];
   private history: Command[] = [];
 
