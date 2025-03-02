@@ -9,7 +9,7 @@ interface ICalculate {
     percent(firstNumber: number, secondNumber: number) : string;
 }
 
-class Calculate implements ICalculate {
+export class Calculate implements ICalculate {
     constructor() {}
 
     calc(operator: Operator, firstNumber: number, secondNumber: number): number | string {
