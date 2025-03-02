@@ -1,6 +1,4 @@
 import { describe, expect, test, jest, beforeEach } from '@jest/globals';
-
-// Импортируйте классы из вашего модуля
 import { Note, SpecificNote, TodoList } from './main';
 
 describe('Note', () => {
