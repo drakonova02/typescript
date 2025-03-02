@@ -8,12 +8,12 @@ type OptionalTranslations = {
   [codeLanguage: string]: string | undefined;
 };
 
-let appTranslations : Translations = {
+export let appTranslations : Translations = {
   en: "Hello",
   ua: "Привіт",
 }
 
-const appOptionalTranslations: OptionalTranslations = {
+export const appOptionalTranslations: OptionalTranslations = {
   en: "Hi",
   ua: undefined, // Необов'язкове, можна не вказувати
   fr: "Bonjour",
